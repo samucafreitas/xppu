@@ -117,14 +117,12 @@ main(int argc, char ** argv)
             continue;
         }
 
-
         usage();
 	} 
     
     XCloseDisplay(dpy);
     return 0; 
 }
-
 
 void
 mouseMove(Display *dpy, Window win, int x, int y)
@@ -256,7 +254,7 @@ criteria(Display *dpy, Window win)
         printf("class=\"%s\"\ninstance=\"%s\"\n", wm->res_class, wm->res_name);
 
     printf("id=%d\n", win);
-    printf("title=%s\n", getWinTitle(dpy, win)->str);
+    printf("title=\"%s\"\n", getWinTitle(dpy, win)->str);
 
     XFree(wm);
 }
