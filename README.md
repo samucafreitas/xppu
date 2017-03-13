@@ -7,4 +7,5 @@ Option           | Description
 `-resolution`    | print out display resolution
 `-mouseposition` | returns the current mouse position
 `-mousemove x y` | move the mouse to the x,y coordinates
-`-winfocus`      | returns the title of the current focused window
+`-selectwin`     | returns (id, class, etc...) of the selected window
+`-wintitle`      | returns the title of the current focused window

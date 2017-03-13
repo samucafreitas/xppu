@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
+#include <X11/cursorfont.h>
+#include <stdbool.h>
 
 #define INIT_NAME prog_name=argv[0]
 
@@ -32,16 +34,19 @@ void mouseMove(Display *dpy, Window win, int x, int y);
 Status getMousePosition(Display *dpy, Window win, struct mousePos *mpos);
 void getResolution(Display *dpy, int screen_num, struct dpyRes *res);
 Window getWinFocus(Display *dpy);
-GString *getWinName(Display *dpy);
+GString *getWinTitle(Display *dpy, Window win);
+Window selectWindow(Display *dpy, Window root);
+void criteria(Display *dpy, Window win);
 
 void usage() {
     static const char help[] =
     "usage: %s [-options ...]\n\n"
     "where options include:\n"
-    "    -resolution                    print out display resolution\n"
-    "    -mouseposition                 returns the current mouse position\n"
-    "    -mousemove x y                 move the mouse to the x,y coordinates\n"
-    "    -winfocus                      returns the title of the current focused window\n\n";
+    "    -resolution            print out display resolution\n"
+    "    -mouseposition         returns the current mouse position\n"
+    "    -mousemove x y         move the mouse to the x,y coordinates\n"
+    "    -selectwin             returns (id, class, etc...) of the selected window\n" 
+    "    -wintitle              returns the title of the current focused window\n\n";
 
     fprintf (stderr, help, prog_name);
     exit (1);
@@ -60,7 +65,7 @@ main(int argc, char ** argv)
     dpy = XOpenDisplay(NULL); 
 
     if (!dpy) {
-        fprintf(stderr, "unable to connect to display");
+        fprintf(stderr, "[ERROR]->unable to connect to display");
         return 7;
     }
 
@@ -99,11 +104,19 @@ main(int argc, char ** argv)
             continue;
         }
 
-        if (!strcmp(argv[0], "-winfocus"))
+        if (!strcmp(argv[0], "-wintitle"))
         {
-            printf("winfocus=%s\n", getWinName(dpy)->str);
+            printf("wintitle=%s\n", getWinTitle(dpy, getWinFocus(dpy))->str);
             continue;
         }
+        
+        if (!strcmp(argv[0], "-selectwin"))
+        {
+            Window target_win = selectWindow(dpy, root_win);
+            criteria(dpy, target_win);
+            continue;
+        }
+
 
         usage();
 	} 
@@ -111,6 +124,7 @@ main(int argc, char ** argv)
     XCloseDisplay(dpy);
     return 0; 
 }
+
 
 void
 mouseMove(Display *dpy, Window win, int x, int y)
@@ -161,7 +175,7 @@ getWinFocus(Display *dpy)
 }
 
 GString *
-getWinName(Display *dpy)
+getWinTitle(Display *dpy, Window win)
 {
     /*
      * I was going to use XfetchName(), but it doesn't always return a name
@@ -171,12 +185,11 @@ getWinName(Display *dpy)
 
     XTextProperty text_prop;
     char **list = NULL;
-    GString *win_name;
+    GString *win_title;
     int count = 0;
-    Window focus = getWinFocus(dpy); 
 
-    if (XGetWMName(dpy, focus, &text_prop) != 0 && Xutf8TextPropertyToTextList(dpy, &text_prop, &list, &count) == 0 && count > 0)
-        win_name = g_string_new(list[0]);
+    if (XGetWMName(dpy, win, &text_prop) != 0 && Xutf8TextPropertyToTextList(dpy, &text_prop, &list, &count) == 0 && count > 0)
+        win_title = g_string_new(list[0]);
     else
         return g_string_new(""); //no title
 
@@ -186,5 +199,64 @@ getWinName(Display *dpy)
     if (list != NULL)
         XFreeStringList(list);
 
-    return win_name;
+    return win_title;
+}
+
+Window selectWindow(Display *dpy, Window root)
+{
+    int status;
+    Cursor cursor;
+    XEvent event;
+    Window target_win = None;
+    int btns = 0;
+    int lain_i;
+    unsigned int lain_u;   
+
+    // Make the cursor
+    cursor = XCreateFontCursor(dpy, XC_crosshair);
+
+    status = XGrabPointer(dpy, root, False,
+                          ButtonPressMask|ButtonReleaseMask, GrabModeSync,
+                          GrabModeAsync, root, cursor, CurrentTime);
+    if (status != GrabSuccess)
+        fprintf(stderr, "[ERROR]->Can't grab the mouse.");
+
+    // select a window
+    while ((target_win == None) || btns != 0) {
+        XAllowEvents(dpy, SyncPointer, CurrentTime);
+        XWindowEvent(dpy, root, ButtonPressMask|ButtonReleaseMask, &event);
+        switch (event.type) {
+            case ButtonPress:
+                if (target_win == None) {
+                    if(!XQueryPointer(dpy, event.xbutton.subwindow, &root, &target_win,
+                                      &lain_i, &lain_i, &lain_i, &lain_i, &lain_u)) 
+                        target_win = root;
+                }
+                btns++;
+                break;
+            case ButtonRelease:
+                if (btns > 0) btns--;
+                break;
+        }
+    } 
+
+    XUngrabPointer(dpy, CurrentTime);
+
+    return target_win;
+}
+
+void
+criteria(Display *dpy, Window win)
+{
+    XClassHint *wm;
+    if (!(wm = XAllocClassHint()))
+        fprintf(stderr, "[ERROR]->Insufficient memory!");
+
+    if(XGetClassHint(dpy, win, wm))
+        printf("class=\"%s\"\ninstance=\"%s\"\n", wm->res_class, wm->res_name);
+
+    printf("id=%d\n", win);
+    printf("title=%s\n", getWinTitle(dpy, win)->str);
+
+    XFree(wm);
 }
