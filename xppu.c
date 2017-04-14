@@ -200,7 +200,8 @@ getWinTitle(Display *dpy, Window win)
     return win_title;
 }
 
-Window selectWindow(Display *dpy, Window root)
+Window
+selectWindow(Display *dpy, Window root)
 {
     int status;
     Cursor cursor;
@@ -226,7 +227,7 @@ Window selectWindow(Display *dpy, Window root)
         switch (event.type) {
             case ButtonPress:
                 if (target_win == None) {
-                    if(!XQueryPointer(dpy, event.xbutton.subwindow, &root, &target_win,
+                    if (!event.xbutton.subwindow || !XQueryPointer(dpy, event.xbutton.subwindow, &root, &target_win,
                                       &lain_i, &lain_i, &lain_i, &lain_i, &lain_u)) 
                         target_win = root;
                 }
@@ -237,7 +238,6 @@ Window selectWindow(Display *dpy, Window root)
                 break;
         }
     } 
-
     XUngrabPointer(dpy, CurrentTime);
 
     return target_win;
