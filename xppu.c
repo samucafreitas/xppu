@@ -38,14 +38,15 @@ GString *getWinTitle(Display *dpy, Window win);
 Window selectWindow(Display *dpy, Window root);
 void criteria(Display *dpy, Window win);
 
-void usage() {
+void
+usage() {
     static const char help[] =
     "usage: %s [-options ...]\n\n"
     "where options include:\n"
     "    -resolution            print out display resolution\n"
     "    -mouseposition         returns the current mouse position\n"
     "    -mousemove x y         move the mouse to the x,y coordinates\n"
-    "    -selectwin             returns (id, class, etc...) of the selected window\n" 
+    "    -selectwin             returns (id, class, etc...) of the selected window\n"
     "    -wintitle              returns the title of the current focused window\n\n";
 
     fprintf (stderr, help, prog_name);
@@ -62,7 +63,7 @@ main(int argc, char ** argv)
     INIT_NAME;
 
     // To open a connection to the X server
-    dpy = XOpenDisplay(NULL); 
+    dpy = XOpenDisplay(NULL);
 
     if (!dpy) {
         fprintf(stderr, "[ERROR]->unable to connect to display");
@@ -72,8 +73,8 @@ main(int argc, char ** argv)
     // attr
     screen_num = DefaultScreen(dpy);
     root_win = DefaultRootWindow(dpy);
-    
-    // Handle '-' options 
+
+    // Handle '-' options
     while (argv++, --argc>0 && **argv == '-')
     {
         if (!strcmp(argv[0], "-"))
@@ -83,7 +84,7 @@ main(int argc, char ** argv)
         {
             struct dpyRes res;
             getResolution(dpy, screen_num, &res);
-            printf("mm=%dx%d\npx=%dx%d\n", res.dwidth, res.dheight, res.dwidthMM, res.dheightMM);
+            printf("px=%dx%d\nmm=%dx%d\n", res.dwidth, res.dheight, res.dwidthMM, res.dheightMM);
             continue;
         }
 
@@ -109,7 +110,7 @@ main(int argc, char ** argv)
             printf("wintitle=%s\n", getWinTitle(dpy, getWinFocus(dpy))->str);
             continue;
         }
-        
+
         if (!strcmp(argv[0], "-selectwin"))
         {
             Window target_win = selectWindow(dpy, root_win);
@@ -118,10 +119,10 @@ main(int argc, char ** argv)
         }
 
         usage();
-	} 
-    
+	}
+
     XCloseDisplay(dpy);
-    return 0; 
+    return 0;
 }
 
 void
@@ -143,7 +144,7 @@ getMousePosition(Display *dpy, Window win, struct mousePos *mpos)
      * XQueryPointer function returns the root window the pointer is logically on
      * and the pointer coordinates relative to the root window's origin.
      */
-    status = XQueryPointer(dpy, win, &root_return, &child_return, &mpos->x, &mpos->y, 
+    status = XQueryPointer(dpy, win, &root_return, &child_return, &mpos->x, &mpos->y,
                      &win_x_return, &win_y_return, &mask_return);
     return status;
 }
@@ -154,7 +155,7 @@ getResolution(Display *dpy, int screen_num, struct dpyRes *res)
     // display width and height in pixels
     res->dwidth = DisplayWidth(dpy, screen_num);
     res->dheight = DisplayHeight(dpy, screen_num);
-    
+
     // display width and height in millimeters
     res->dwidthMM = DisplayWidthMM(dpy, screen_num);
     res->dheightMM = DisplayHeightMM(dpy, screen_num);
@@ -209,7 +210,7 @@ selectWindow(Display *dpy, Window root)
     Window target_win = None;
     int btns = 0;
     int lain_i;
-    unsigned int lain_u;   
+    unsigned int lain_u;
 
     // Make the cursor
     cursor = XCreateFontCursor(dpy, XC_crosshair);
@@ -228,7 +229,7 @@ selectWindow(Display *dpy, Window root)
             case ButtonPress:
                 if (target_win == None) {
                     if (!event.xbutton.subwindow || !XQueryPointer(dpy, event.xbutton.subwindow, &root, &target_win,
-                                      &lain_i, &lain_i, &lain_i, &lain_i, &lain_u)) 
+                                      &lain_i, &lain_i, &lain_i, &lain_i, &lain_u))
                         target_win = root;
                 }
                 btns++;
@@ -237,7 +238,7 @@ selectWindow(Display *dpy, Window root)
                 if (btns > 0) btns--;
                 break;
         }
-    } 
+    }
     XUngrabPointer(dpy, CurrentTime);
 
     return target_win;
@@ -250,7 +251,7 @@ criteria(Display *dpy, Window win)
     if (!(wm = XAllocClassHint()))
         fprintf(stderr, "[ERROR]->Insufficient memory!");
 
-    if(XGetClassHint(dpy, win, wm))
+    if (XGetClassHint(dpy, win, wm))
         printf("class=\"%s\"\ninstance=\"%s\"\n", wm->res_class, wm->res_name);
 
     printf("id=%d\n", win);
