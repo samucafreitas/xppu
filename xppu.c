@@ -9,11 +9,12 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
+#include <X11/cursorfont.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <glib.h>
-#include <X11/cursorfont.h>
 #include <stdbool.h>
+#include <string.h>
+#include <glib.h>
 
 #define INIT_NAME prog_name=argv[0]
 
@@ -54,7 +55,7 @@ usage() {
 }
 
 int
-main(int argc, char ** argv)
+main(int argc, char **argv)
 {
     int screen_num;
     Display *dpy;
@@ -173,8 +174,8 @@ getWinFocus(Display *dpy)
     return focus;
 }
 
-GString *
-getWinTitle(Display *dpy, Window win)
+GString
+*getWinTitle(Display *dpy, Window win)
 {
     /*
      * I was going to use XfetchName(), but it doesn't always return a name
