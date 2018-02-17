@@ -30,9 +30,12 @@
  *
  * Xppu has used snippets from xprop 1.2.0 -> https://opensource.apple.com
  *
- * Last updated 06/02/2017 - Sam Uel -> https://github.com/samucafreitas
+ * File              : xppu.c
+ * Author            : Sam Uel <samuelfreitas@linuxmail.org>
+ * Date              : 01 feb 2017
+ * Last Modified Date: 20 jun 2017
+ * Last Modified By  : Sam Uel <samuelfreitas@linuxmail.org>
  */
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
