@@ -1,6 +1,15 @@
 # xppu
 Xppu is a utility I wrote in C for learning purposes.
 
+# Prerequisites
+    xlib  - Standard Xlib library
+    glib - Gnome library
+
+# Install
+```sh
+$ sudo make all install
+```
+
 # Usage
 Option           | Description
 -----------------|-------------
