@@ -2,7 +2,7 @@
 Xppu is a utility I wrote in C for learning purposes.
 
 ## Prerequisites
-    xlib  - Standard Xlib library
+    xlib - Standard Xlib library
     glib - Gnome library
 
 ## Install
