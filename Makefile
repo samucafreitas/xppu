@@ -5,7 +5,7 @@ LDFLAGS = `pkg-config --libs glib-2.0` -lX11
 
 .PHONY: all
 all:
-	$(CC) -c $(CFLAGS) xppu.c 
+	$(CC) -c $(CFLAGS) xppu.c
 	$(CC) xppu.o $(LDFLAGS) -o xppu
 
 .PHONY: install
