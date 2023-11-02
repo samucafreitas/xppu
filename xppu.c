@@ -122,7 +122,7 @@ main(int argc, char **argv)
         if (!strcmp(argv[0], "-mouseposition"))
         {
             struct mousePos mpos;
-            if(getMousePosition(dpy, root_win, &mpos))
+            if (getMousePosition(dpy, root_win, &mpos))
                 printf("X=%d\nY=%d\n", mpos.x, mpos.y);
             continue;
         }
